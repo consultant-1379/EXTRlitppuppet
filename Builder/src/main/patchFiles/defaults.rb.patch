@@ -1,0 +1,19 @@
+--- defaults.rb	2016-04-21 05:30:17.000000000 +0100
++++ defaults.rb.new	2022-03-24 09:34:24.332670091 +0000
+@@ -1529,14 +1529,14 @@ EOT
+       older master, so should never need to be set explicitly."
+     },
+     :agent_catalog_run_lockfile => {
+-      :default    => "$statedir/agent_catalog_run.lock",
++      :default    => "$rundir/agent_catalog_run.lock",
+       :type       => :string, # (#2888) Ensure this file is not added to the settings catalog.
+       :desc       => "A lock file to indicate that a puppet agent catalog run is currently in progress.
+         The file contains the pid of the process that holds the lock on the catalog run.",
+     },
+     :agent_disabled_lockfile => {
+         :default    => "$statedir/agent_disabled.lock",
+-        :type       => :file,
++        :type       => :string,
+         :desc       => "A lock file to indicate that puppet agent runs have been administratively
+           disabled.  File contains a JSON object with state information.",
+     },

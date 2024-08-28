@@ -1,0 +1,11 @@
+
+module dbus_send_msg 1.0;
+
+require {
+	type systemd_logind_t;
+	type puppetagent_t;
+	class dbus send_msg;
+}
+
+#============= systemd_logind_t ==============
+allow systemd_logind_t puppetagent_t:dbus send_msg;

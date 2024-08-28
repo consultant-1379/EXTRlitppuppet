@@ -1,0 +1,84 @@
+--- puppet-3.8.7/ext/redhat/client.init	2016-04-21 05:30:17.000000000 +0100
++++ /home/ray/workspace/EXTRlitppuppet-torf-345187/puppet	2019-05-01 13:30:24.566349300 +0100
+@@ -10,9 +10,6 @@
+ # processname: puppet
+ # config: /etc/sysconfig/puppet
+ 
+-# Source function library.
+-. /etc/rc.d/init.d/functions
+-
+ PATH=/usr/bin:/sbin:/bin:/usr/sbin
+ export PATH
+ 
+@@ -22,6 +19,9 @@ pidfile=${PIDFILE-/var/run/puppet/agent.
+ puppetd=${PUPPETD-/usr/bin/puppet}
+ RETVAL=0
+ 
++# Source function library.
++. /etc/rc.d/init.d/functions
++
+ PUPPET_OPTS="agent "
+ [ -n "${PUPPET_SERVER}" ] && PUPPET_OPTS="${PUPPET_OPTS} --server=${PUPPET_SERVER}"
+ [ -n "$PUPPET_LOG" ] && PUPPET_OPTS="${PUPPET_OPTS} --logdest=${PUPPET_LOG}"
+@@ -39,6 +39,19 @@ fi
+ ## Not used for now
+ ##[ -n "$INIT_VERSION" ] && PUPPET_OPTS="${PUPPET_OPTS} --fullrun"
+ 
++condstart() {
++    chk_state=$(/sbin/chkconfig --list puppet 2> /dev/null | awk '{print $7}' | awk -F':' '{print $2}' | tr 'A-Z' 'a-z' | awk '{$1=$1};1')
++    if [ "${chk_state}" == "on" ];
++    then
++        start
++    else
++        echo -n $"chkconfig --list puppet shows the service is not on. Not starting puppet agent"
++        RETVAL=1
++        echo
++        return $RETVAL
++    fi
++}
++
+ start() {
+     echo -n $"Starting puppet agent: "
+     daemon $daemonopts $puppetd ${PUPPET_OPTS} ${PUPPET_EXTRA_OPTS}
+@@ -50,6 +63,13 @@ start() {
+ 
+ stop() {
+     echo -n $"Stopping puppet agent: "
++    # Get the daemon pid if exists
++    [[ -f $pidfile ]] && daemonpid=$(cat $pidfile)
++    if [[ -n $daemonpid ]]; then
++        pkill -TERM -P $daemonpid || :
++        sleep 1 # grace period
++        pgrep -P $daemonpid > /dev/null && (pkill -KILL -P $daemonpid || :)
++    fi
+     killproc $pidopts $puppetd
+     RETVAL=$?
+     echo
+@@ -66,7 +86,7 @@ reload() {
+ 
+ restart() {
+     stop
+-    start
++    condstart
+ }
+ 
+ rh_status() {
+@@ -86,6 +106,9 @@ genconfig() {
+ 
+ case "$1" in
+     start)
++        condstart
++    ;;
++    force-start)
+         start
+     ;;
+     stop)
+@@ -112,7 +135,7 @@ case "$1" in
+         genconfig
+     ;;
+     *)
+-        echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart|once|genconfig}"
++        echo $"Usage: $0 {start|force-start|stop|status|restart|reload|force-reload|condrestart|once|genconfig}"
+         exit 1
+ esac
+ 

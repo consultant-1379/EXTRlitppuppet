@@ -1,0 +1,40 @@
+--- certificate_revocation_list_specOLD.rb	2016-04-21 05:30:17.000000000 +0100
++++ certificate_revocation_list_spec.rb	2021-12-03 00:20:12.622790827 +0000
+@@ -16,8 +16,8 @@ describe Puppet::SSL::CertificateRevocat
+     expect(time.to_i).to be_within(5*60).of(Time.now.to_i)
+   end
+ 
+-  def expects_time_close_to_five_years(time)
+-    future = Time.now + Puppet::SSL::CertificateRevocationList::FIVE_YEARS
++  def expects_time_close_to_fifty_years(time)
++    future = Time.now + Puppet::SSL::CertificateRevocationList::FIFTY_YEARS
+     expect(time.to_i).to be_within(5*60).of(future.to_i)
+   end
+ 
+@@ -111,11 +111,11 @@ describe Puppet::SSL::CertificateRevocat
+       expects_time_close_to_now(thisUpdate)
+     end
+ 
+-    it "returns the next update time in UTC 5 years from now" do
++    it "returns the next update time in UTC 50 years from now" do
+       # http://tools.ietf.org/html/rfc5280#section-5.1.2.5
+       nextUpdate = @crl.generate(@cert, @key).next_update
+       nextUpdate.should be_utc
+-      expects_time_close_to_five_years(nextUpdate)
++      expects_time_close_to_fifty_years(nextUpdate)
+     end
+ 
+     it "should verify using the CA public_key" do
+@@ -149,10 +149,10 @@ describe Puppet::SSL::CertificateRevocat
+       expects_time_close_to_now(@crl.content.last_update)
+     end
+ 
+-    it "should mark the CRL valid for five years" do
++    it "should mark the CRL valid for fifty years" do
+       @crl.revoke(1, @key)
+ 
+-      expects_time_close_to_five_years(@crl.content.next_update)
++      expects_time_close_to_fifty_years(@crl.content.next_update)
+     end
+ 
+     it "should sign the CRL with the CA's private key and a digest instance" do

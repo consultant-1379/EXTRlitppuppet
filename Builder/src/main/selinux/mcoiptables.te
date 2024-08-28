@@ -1,0 +1,14 @@
+
+module mcoiptables 1.0;
+
+require {
+    type insmod_t;
+    type iptables_t;
+    type openshift_initrc_tmp_t;
+    class process { siginh rlimitinh noatsecure };
+    class file write;
+}
+
+#============= iptables_t ==============
+allow iptables_t insmod_t:process { siginh noatsecure rlimitinh };
+allow iptables_t openshift_initrc_tmp_t:file write;

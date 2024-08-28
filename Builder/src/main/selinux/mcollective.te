@@ -1,0 +1,23 @@
+module mcollective 1.0;
+
+require {
+    type openshift_initrc_t;
+    type openshift_initrc_tmp_t;
+    type groupadd_t;
+    type load_policy_t;
+    type setfiles_t;
+    class fifo_file { read };
+    class process { sigchld };
+    class file { read append };
+}
+
+#============= groupadd_t ==============
+allow groupadd_t openshift_initrc_t:fifo_file read;
+allow groupadd_t openshift_initrc_tmp_t:file { read append };
+
+#============= load_policy_t ==============
+allow load_policy_t openshift_initrc_t:fifo_file read;
+allow load_policy_t openshift_initrc_tmp_t:file { read append };
+
+#============= setfiles_t ==============
+allow setfiles_t openshift_initrc_tmp_t:file { read append };

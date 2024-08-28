@@ -1,0 +1,20 @@
+--- certificate_revocation_listOLD.rb	2016-04-21 05:30:17.000000000 +0100
++++ certificate_revocation_list.rb	2021-11-24 14:33:47.354498552 +0000
+@@ -3,7 +3,7 @@ require 'puppet/indirector'
+ 
+ # Manage the CRL.
+ class Puppet::SSL::CertificateRevocationList < Puppet::SSL::Base
+-  FIVE_YEARS = 5 * 365*24*60*60
++  FIFTY_YEARS = 50 * 365*24*60*60
+ 
+   wraps OpenSSL::X509::CRL
+ 
+@@ -85,7 +85,7 @@ private
+     # The CRL is not valid if the time of checking == the time of last_update.
+     # So to have it valid right now we need to say that it was updated one second ago.
+     @content.last_update = time - 1
+-    @content.next_update = time + FIVE_YEARS
++    @content.next_update = time + FIFTY_YEARS
+   end
+ 
+   def update_to_next_crl_number

@@ -1,0 +1,37 @@
+--- event_manager.rb	2019-09-11 16:39:24.427576298 +0100
++++ event_manager.rb.new	2019-09-11 16:41:53.415232674 +0100
+@@ -97,19 +97,29 @@ class Puppet::Transaction::EventManager
+   private
+ 
+   def process_callback(resource, callback, events)
++    status = "success"
+     process_noop_events(resource, callback, events) and return false unless events.detect { |e| e.status != "noop" }
+     resource.send(callback)
+ 
+     if not resource.is_a?(Puppet::Type.type(:whit))
+-      resource.notice "Triggered '#{callback}' from #{events.length} events"
++      message = "Triggered '#{callback}' from #{events.length} events"
++      resource.notice message
+     end
+-    return true
+   rescue => detail
+-    resource.err "Failed to call #{callback}: #{detail}"
+-
++    message = "Failed to call #{callback}: #{detail}"
++    resource.err message
++    status = "failure"
+     transaction.resource_status(resource).failed_to_restart = true
++    # A notified resource which fails should report its failed events
++    transaction.resource_status(resource).failed = true
+     resource.log_exception(detail)
+-    return false
++  ensure
++    if not resource.is_a?(Puppet::Type.type(:whit))
++      options = { :message => message, :status => status, :name => callback.to_s }
++      event = resource.event options
++      transaction.resource_status(resource) << event if event
++    end
++    return (status == "success") ? true : false
+   end
+ 
+   def process_noop_events(resource, callback, events)
